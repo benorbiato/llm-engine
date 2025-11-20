@@ -13,33 +13,14 @@ services:
       - CLAUDE_API_KEY=${CLAUDE_API_KEY}
       - ENV=production
     volumes:
-      # remove this in production
-      - ./src:/app/src
-    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+      - ./src:/src/src
+    command: python -m uvicorn src.entrypoints.main_api:app --host 0.0.0.0 --port 8000 --reload
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
-    networks:
-      - juscash-network
-    restart: unless-stopped
-
-  ui:
-    build:
-      context: .
-      dockerfile: Dockerfile.streamlit
-    container_name: juscash-ui
-    ports:
-      - "8501:8501"
-    environment:
-      - PYTHONUNBUFFERED=1
-      - API_URL=http://api:8000
-    depends_on:
-      - api
-    volumes:
-      - ./src/ui:/app/src/ui
     networks:
       - juscash-network
     restart: unless-stopped
