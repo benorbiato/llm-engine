@@ -1,0 +1,45 @@
+{
+  "process": {
+    "numeroProcesso": "0100001-11.2023.5.02.0001",
+    "classe": "Cumprimento de Sentença",
+    "orgaoJulgador": "1ª VARA DO TRABALHO - SÃO PAULO/SP",
+    "ultimaDistribuicao": "2024-09-10T10:00:00.000Z",
+    "assunto": "Verbas trabalhistas",
+    "segredoJustica": false,
+    "justicaGratuita": true,
+    "siglaTribunal": "TRT2",
+    "esfera": "Trabalhista",
+    "valorCondenacao": 5000,
+    "documentos": [
+      {
+        "id": "DOC-9-1",
+        "dataHoraJuntada": "2023-12-01T10:10:00.000",
+        "nome": "Sentença de Mérito",
+        "texto": "PODER JUDICIÁRIO\n1ª VARA DO TRABALHO – SÃO PAULO/SP\n\nCondenação do réu ao pagamento de verbas trabalhistas."
+      },
+      {
+        "id": "DOC-9-2",
+        "dataHoraJuntada": "2024-02-01T12:00:00.000",
+        "nome": "Certidão de Trânsito em Julgado",
+        "texto": "CERTIDÃO DE TRÂNSITO EM JULGADO\n\nCertifico que a sentença transitou em julgado."
+      },
+      {
+        "id": "DOC-9-3",
+        "dataHoraJuntada": "2024-03-10T09:30:00.000",
+        "nome": "Planilha de Cálculos",
+        "texto": "PLANILHA DE CÁLCULOS\n\nA autora apresentou planilha com cálculos de verbas trabalhistas."
+      }
+    ],
+    "movimentos": [
+      {
+        "dataHora": "2024-03-01T11:00:00.000",
+        "descricao": "Início da execução definitiva."
+      },
+      {
+        "dataHora": "2024-04-05T16:45:00.000",
+        "descricao": "Determinação de bloqueio via convênio."
+      }
+    ]
+  }
+}
+

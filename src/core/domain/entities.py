@@ -1,78 +1,90 @@
-from datetime import datetime
+"""
+Domain entities for judicial processes.
+"""
 from typing import List, Optional
-from pydantic import BaseModel, Field, ConfigDict
-
-class Document(BaseModel):
-    """
-    Represents a document (e.g., sentence, certificate, calculations) attached to the process.
-    """
-    id: str
-    
-    joined_at: datetime = Field(alias="dataHoraJuntada")
-    
-    name: str = Field(alias="nome")
-    
-    text_content: str = Field(alias="texto")
-
-    model_config = ConfigDict(populate_by_name=True, from_attributes=True)
+from datetime import datetime
+from pydantic import BaseModel, Field
 
 
-class Movement(BaseModel):
-    """
-    Represents a movement or procedural action in the judicial process.
-    """
-    occurred_at: datetime = Field(alias="dataHora")
-    
-    description: str = Field(alias="descricao")
+class Documento(BaseModel):
+    """Document entity within a judicial process."""
+    id: str = Field(..., description="Unique document identifier")
+    dataHoraJuntada: datetime = Field(..., description="Document filing date and time")
+    nome: str = Field(..., description="Document name")
+    texto: str = Field(..., description="Document content/text")
 
-    model_config = ConfigDict(populate_by_name=True, from_attributes=True)
-
-
-class Honoraries(BaseModel):
-    """
-    Represents the different types of honoraries, required by POL-7.
-    """
-    contractual: Optional[float] = Field(None, alias="contratuais")
-    
-    expert_witness: Optional[float] = Field(None, alias="periciais")
-    
-    success_fees: Optional[float] = Field(None, alias="sucumbenciais")
-    
-    model_config = ConfigDict(populate_by_name=True, from_attributes=True)
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": "DOC-1-1",
+                "dataHoraJuntada": "2023-09-10T10:12:05.000",
+                "nome": "Sentença de Mérito",
+                "texto": "PODER JUDICIÁRIO..."
+            }
+        }
 
 
-class Process(BaseModel):
-    """
-    The main entity representing the judicial process data structure.
-    All fields use English snake_case but accept the Portuguese keys from the input schema
-    via Pydantic's alias functionality.
-    """
-    process_number: str = Field(alias="numeroProcesso")
-    
-    class_name: str = Field(alias="classe")
-    
-    judgment_body: str = Field(alias="orgaoJulgador")
-    
-    last_distribution_at: datetime = Field(alias="ultimaDistribuicao")
-    
-    subject: str = Field(alias="assunto")
-    
-    is_confidential: bool = Field(alias="segredoJustica")
-    
-    is_free_justice: bool = Field(alias="justicaGratuita")
-    
-    court_acronym: str = Field(alias="siglaTribunal")
-    
-    jurisdiction: str = Field(alias="esfera")
-    
-    case_value: Optional[float] = Field(None, alias="valorCausa")
-    
-    condemnation_value: Optional[float] = Field(None, alias="valorCondenacao")
-    
-    documents: List[Document] = Field(alias="documentos")
-    
-    movements: List[Movement] = Field(alias="movimentos")
-    
-    honoraries: Optional[Honoraries] = Field(None, alias="honorarios")
+class Movimento(BaseModel):
+    """Movement/action entity within a judicial process."""
+    dataHora: datetime = Field(..., description="Date and time of movement")
+    descricao: str = Field(..., description="Movement description")
 
-    model_config = ConfigDict(populate_by_name=True, from_attributes=True)
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "dataHora": "2024-01-20T11:22:33.000",
+                "descricao": "Iniciado cumprimento definitivo de sentença."
+            }
+        }
+
+
+class Honorarios(BaseModel):
+    """Fees/honorarios entity."""
+    contratuais: Optional[float] = Field(None, description="Contractual fees")
+    periciais: Optional[float] = Field(None, description="Expert fees")
+    sucumbenciais: Optional[float] = Field(None, description="Litigation fees")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "contratuais": 6000,
+                "periciais": 1200,
+                "sucumbenciais": 3000
+            }
+        }
+
+
+class Processo(BaseModel):
+    """Judicial process entity - main domain model."""
+    numeroProcesso: str = Field(..., description="Judicial process number")
+    classe: str = Field(..., description="Process class/type")
+    orgaoJulgador: str = Field(..., description="Court/judicial body")
+    ultimaDistribuicao: datetime = Field(..., description="Last distribution date/time")
+    assunto: str = Field(..., description="Process subject")
+    segredoJustica: bool = Field(..., description="Secret justice indicator")
+    justicaGratuita: bool = Field(..., description="Free justice indicator")
+    siglaTribunal: str = Field(..., description="Court abbreviation")
+    esfera: str = Field(..., description="Judicial sphere (Federal, Estadual, Trabalhista)")
+    documentos: List[Documento] = Field(..., description="Associated documents")
+    movimentos: List[Movimento] = Field(..., description="Process movements")
+    valorCondenacao: Optional[float] = Field(None, description="Condemnation value")
+    honorarios: Optional[Honorarios] = Field(None, description="Associated fees")
+    valorCausa: Optional[float] = Field(None, description="Case value")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "numeroProcesso": "0001234-56.2023.4.05.8100",
+                "classe": "Cumprimento de Sentença contra a Fazenda Pública",
+                "orgaoJulgador": "19ª VARA FEDERAL - SOBRAL/CE",
+                "ultimaDistribuicao": "2024-11-18T23:15:44.130Z",
+                "assunto": "Rural (Art. 48/51)",
+                "segredoJustica": False,
+                "justicaGratuita": True,
+                "siglaTribunal": "TRF5",
+                "esfera": "Federal",
+                "documentos": [],
+                "movimentos": [],
+                "valorCondenacao": 67592
+            }
+        }
