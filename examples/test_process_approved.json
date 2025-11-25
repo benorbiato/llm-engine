@@ -1,0 +1,60 @@
+{
+  "process": {
+    "numeroProcesso": "0001234-56.2023.4.05.8100",
+    "classe": "Cumprimento de Sentença contra a Fazenda Pública",
+    "orgaoJulgador": "19ª VARA FEDERAL - SOBRAL/CE",
+    "ultimaDistribuicao": "2024-11-18T23:15:44.130Z",
+    "assunto": "Rural (Art. 48/51)",
+    "segredoJustica": false,
+    "justicaGratuita": true,
+    "siglaTribunal": "TRF5",
+    "esfera": "Federal",
+    "valorCondenacao": 67592,
+    "documentos": [
+      {
+        "id": "DOC-1-1",
+        "dataHoraJuntada": "2023-09-10T10:12:05.000",
+        "nome": "Sentença de Mérito",
+        "texto": "PODER JUDICIÁRIO\n19ª VARA FEDERAL – SOBRAL/CE\n\nProcesso número 0001234-56.2023.4.05.8100\n\nSentença de procedência. O autor foi condenado procedente. Valor de condenação: R$ 67.592,00."
+      },
+      {
+        "id": "DOC-1-2",
+        "dataHoraJuntada": "2023-12-12T09:05:30.000",
+        "nome": "Certidão de Trânsito em Julgado",
+        "texto": "CERTIDÃO DE TRÂNSITO EM JULGADO\n\nCertifico que a sentença de fls. anteriores transitou em julgado em 12 de dezembro de 2023, conforme registro de sistema."
+      },
+      {
+        "id": "DOC-1-3",
+        "dataHoraJuntada": "2024-02-15T14:00:10.000",
+        "nome": "Planilha de Cálculos",
+        "texto": "PLANILHA DE CÁLCULOS\n\nA parte exequente apresentou, em 15 de fevereiro de 2024, planilha atualizada dos cálculos da condenação, totalizando R$ 67.592,00 com acréscimos legais."
+      },
+      {
+        "id": "DOC-1-4",
+        "dataHoraJuntada": "2024-04-01T16:41:20.000",
+        "nome": "Requisição (RPV)",
+        "texto": "REQUISIÇÃO DE PEQUENO VALOR – RPV\n\nExpede-se o presente RPV no valor de R$ 67.592,00 em favor do exequente, conforme cálculos apresentados."
+      }
+    ],
+    "movimentos": [
+      {
+        "dataHora": "2024-01-20T11:22:33.000",
+        "descricao": "Iniciado cumprimento definitivo de sentença."
+      },
+      {
+        "dataHora": "2024-03-05T09:15:00.000",
+        "descricao": "Intimação do ente público para pagamento."
+      },
+      {
+        "dataHora": "2024-05-02T18:22:26.000",
+        "descricao": "Decorrido prazo de impugnação sem manifestação."
+      }
+    ],
+    "honorarios": {
+      "contratuais": 6000,
+      "periciais": 1200,
+      "sucumbenciais": 3000
+    }
+  }
+}
+

@@ -1,49 +1,40 @@
-version: '3.8'
-
 services:
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: llm-engine-api
+    container_name: judicial-verification-api
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - LLM_MODEL=claude-3-5-sonnet-20241022
+      - LLM_TEMPERATURE=0.3
+      - LOG_LEVEL=INFO
+      - DEBUG=false
     ports:
       - "8000:8000"
-    environment:
-      - PYTHONUNBUFFERED=1
-      - CLAUDE_API_KEY=${CLAUDE_API_KEY}
-      - ENV=production
     volumes:
-      # remove this in production
       - ./src:/app/src
-    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 5s
+    command: uvicorn src.entrypoints.main_api:app --host 0.0.0.0 --port 8000 --reload
     networks:
-      - juscash-network
-    restart: unless-stopped
+      - judicial-network
 
   ui:
     build:
       context: .
-      dockerfile: Dockerfile.streamlit
-    container_name: juscash-ui
+      dockerfile: Dockerfile
+    container_name: judicial-verification-ui
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     ports:
       - "8501:8501"
-    environment:
-      - PYTHONUNBUFFERED=1
-      - API_URL=http://api:8000
+    volumes:
+      - ./src:/app/src
+    command: streamlit run src/entrypoints/main_ui.py --server.port 8501 --server.address 0.0.0.0
     depends_on:
       - api
-    volumes:
-      - ./src/ui:/app/src/ui
     networks:
-      - juscash-network
-    restart: unless-stopped
+      - judicial-network
 
 networks:
-  juscash-network:
+  judicial-network:
     driver: bridge
