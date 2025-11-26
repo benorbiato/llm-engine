@@ -1,16 +1,16 @@
 """
-LLM Service - LangChain wrapper for Claude with structured JSON output
-Alternative version using LangChain instead of direct Anthropic
+LLM Service - LangChain wrapper for Groq with structured JSON output
+Using Groq API for high-speed LLM inference
 """
 import json
 import time
 from typing import Dict, Any, Optional
 
-from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.exceptions import OutputParserException
-from openai import RateLimitError, AuthenticationError
+from groq import RateLimitError, AuthenticationError
 
 from app.config import settings
 from app.utils.logger import get_logger
@@ -32,20 +32,20 @@ class APIAuthenticationError(Exception):
 
 class LLMService:
     """
-    LangChain wrapper around OpenAI for structured verification calls
+    LangChain wrapper around Groq for structured verification calls
     """
     
     def __init__(self):
         """
-        Initialize LLM Service with LangChain
+        Initialize LLM Service with LangChain + Groq
         """
-        self.llm = ChatOpenAI(
-            model=settings.openai_model,
-            api_key=settings.openai_api_key,
+        self.llm = ChatGroq(
+            model=settings.groq_model,
+            api_key=settings.groq_api_key,
             temperature=0.1,
             max_tokens=settings.max_tokens
         )
-        self._prompt_version = "1.0-openai"
+        self._prompt_version = "1.0-groq"
         self._setup_chain()
     
     def _setup_chain(self):
@@ -128,11 +128,11 @@ Avalie se o processo deve ser adquirido conforme políticas.
             processo_json = json.dumps(processo_data, indent=2, default=str, ensure_ascii=False)
             
             logger.info(
-                "Starting LLM verification with OpenAI",
+                "Starting LLM verification with Groq",
                 extra={"extra_data": {
                     "request_id": request_id,
                     "numero_processo": processo_data.get("numeroProcesso"),
-                    "llm_framework": "openai"
+                    "llm_framework": "groq"
                 }}
             )
             
@@ -155,7 +155,7 @@ Avalie se o processo deve ser adquirido conforme políticas.
                     "decision": result.get("decision"),
                     "processing_time_ms": processing_time,
                     "confidence": result.get("confidence"),
-                    "llm_framework": "openai"
+                    "llm_framework": "groq"
                 }}
             )
             
@@ -166,28 +166,28 @@ Avalie se o processo deve ser adquirido conforme políticas.
                 "confidence": result.get("confidence", 0.0),
                 "policy_analysis": result.get("policy_analysis", {}),
                 "processing_time_ms": processing_time,
-                "model_used": settings.openai_model,
-                "llm_framework": "openai"
+                "model_used": settings.groq_model,
+                "llm_framework": "groq"
             }
             
         except OutputParserException as e:
             logger.error(
-                "Error parsing LLM response with OpenAI",
+                "Error parsing LLM response with Groq",
                 extra={"extra_data": {
                     "request_id": request_id,
                     "error": str(e),
-                    "llm_framework": "openai"
+                    "llm_framework": "groq"
                 }}
             )
             raise ValueError(f"Invalid JSON response from LLM: {e}")
         
         except RateLimitError as e:
-            # OpenAI rate limit or quota exceeded
+            # Groq rate limit or quota exceeded
             processing_time = int((time.time() - start_time) * 1000)
             error_msg = str(e).lower()
             
             logger.error(
-                "OpenAI Rate Limit/Credits Exceeded",
+                "Groq Rate Limit/Credits Exceeded",
                 extra={"extra_data": {
                     "request_id": request_id,
                     "error": str(e),
@@ -198,14 +198,14 @@ Avalie se o processo deve ser adquirido conforme políticas.
             
             raise APICreditsExhaustedError(
                 f"API de crédito esgotado. Motivo: {str(e)}. "
-                f"Por favor, adicione créditos à sua conta OpenAI ou aguarde o reset do rate limit."
+                f"Por favor, adicione créditos à sua conta Groq ou aguarde o reset do rate limit."
             )
         
         except AuthenticationError as e:
             # Invalid API key or expired
             processing_time = int((time.time() - start_time) * 1000)
             logger.error(
-                "OpenAI Authentication Failed",
+                "Groq Authentication Failed",
                 extra={"extra_data": {
                     "request_id": request_id,
                     "error": "Invalid API key or authentication failed",
@@ -215,7 +215,7 @@ Avalie se o processo deve ser adquirido conforme políticas.
             )
             
             raise APIAuthenticationError(
-                "Falha na autenticação com a API. "
+                "Falha na autenticação com a API Groq. "
                 "Verifique se a chave de API é válida e tem permissões ativas."
             )
         
@@ -226,7 +226,7 @@ Avalie se o processo deve ser adquirido conforme políticas.
             # Check for common API error patterns
             if "quota" in error_str or "insufficient_quota" in error_str:
                 logger.error(
-                    "OpenAI Quota Exceeded",
+                    "Groq Quota Exceeded",
                     extra={"extra_data": {
                         "request_id": request_id,
                         "error": str(e),
@@ -245,7 +245,7 @@ Avalie se o processo deve ser adquirido conforme políticas.
                     "request_id": request_id,
                     "error": str(e),
                     "processing_time_ms": processing_time,
-                    "llm_framework": "openai"
+                    "llm_framework": "groq"
                 }}
             )
             raise

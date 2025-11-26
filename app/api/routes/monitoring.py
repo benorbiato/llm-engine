@@ -48,9 +48,9 @@ async def get_api_status():
     
     Returns information about configured API and recommendations.
     """
-    api_key_configured = bool(settings.openai_api_key)
+    api_key_configured = bool(settings.groq_api_key)
     api_key_masked = (
-        settings.openai_api_key[:7] + "..." 
+        settings.groq_api_key[:7] + "..." 
         if api_key_configured else "NOT_CONFIGURED"
     )
     
@@ -59,8 +59,8 @@ async def get_api_status():
     return {
         "status": "operational",
         "api": {
-            "provider": "OpenAI",
-            "model": settings.openai_model,
+            "provider": "Groq",
+            "model": settings.groq_model,
             "api_key_configured": api_key_configured,
             "api_key_preview": api_key_masked,
             "max_tokens_per_request": settings.max_tokens
@@ -70,7 +70,7 @@ async def get_api_status():
             "✅ Use cache para evitar requisições duplicadas",
             f"📊 Atualmente {cache_stats['total_entries']} processos em cache",
             "🔄 Cache expira em 60 minutos",
-            "💰 Monitore seu uso na https://platform.openai.com/account/usage",
+            "💰 Monitore seu uso em https://console.groq.com/",
             "⚠️  Se receber erro 429, seus créditos foram esgotados"
         ]
     }
@@ -84,6 +84,6 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "LLM Verification API",
-        "api_key_configured": bool(settings.openai_api_key)
+        "api_key_configured": bool(settings.groq_api_key)
     }
 

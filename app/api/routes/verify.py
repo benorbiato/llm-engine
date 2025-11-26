@@ -93,7 +93,7 @@ async def verify_process(
             detail={
                 "error": "api_credits_exhausted",
                 "message": str(e),
-                "help": "Adicione créditos à sua conta OpenAI em https://platform.openai.com/account/billing/overview"
+                "help": "Adicione créditos à sua conta Groq em https://console.groq.com/"
             }
         )
     
@@ -110,7 +110,7 @@ async def verify_process(
             detail={
                 "error": "api_authentication_failed",
                 "message": str(e),
-                "help": "Verifique sua chave de API OpenAI nas variáveis de ambiente"
+                "help": "Verifique sua chave de API Groq nas variáveis de ambiente"
             }
         )
     

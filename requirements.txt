@@ -7,11 +7,11 @@ python-dotenv
 streamlit
 requests
 langchain
-langchain-openai
-langchain-google-genai
+langchain-groq
 langchain-anthropic
 langsmith
 python-multipart
 pytest
 pytest-asyncio
 httpx
+groq

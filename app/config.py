@@ -19,9 +19,9 @@ class Settings(BaseSettings):
     port: int = 8000
     reload: bool = True
     
-    # OpenAI (ChatGPT)
-    openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
-    openai_model: str = Field(default="gpt-3.5-turbo", alias="OPENAI_MODEL")
+    # Groq API (ChatGPT)
+    groq_api_key: str = Field(default="", alias="GROQ_API_KEY")
+    groq_model: str = Field(default="llama-3.1-8b-instant", alias="GROQ_MODEL")
     max_tokens: int = 2000
     
     
