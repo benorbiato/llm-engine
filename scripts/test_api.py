@@ -35,7 +35,7 @@ def test_process(base_url: str, example_file: str, description: str) -> bool:
             payload = json.load(f)
         
         response = requests.post(
-            f"{base_url}/v1/verify",
+            f"{base_url}/verify/",
             json=payload,
             timeout=10,
             headers={"Content-Type": "application/json"}
@@ -45,9 +45,9 @@ def test_process(base_url: str, example_file: str, description: str) -> bool:
             result = response.json()
             print(f"✓ Verification successful")
             print(f"  Decision: {result['decision']}")
-            print(f"  Process: {result['process_number']}")
+            print(f"  Process: {result['numeroProcesso']}")
             print(f"  Rationale: {result['rationale'][:100]}...")
-            print(f"  References: {len(result['references'])} policies applied")
+            print(f"  Citations: {result['citations']}")
             return True
         else:
             print(f"✗ Verification failed with status {response.status_code}")
