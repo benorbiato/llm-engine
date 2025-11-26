@@ -1,579 +1,592 @@
-Judicial Process Verification Engine
 
-LLM-powered system for automated verification and eligibility assessment of judicial processes based on company business policies.
+# LLM Verification Engine
 
-Table of Contents
+Automated judicial process verification system powered by LLM technology for intelligent decision-making based on company business policies.
 
-- Project Overview
-- Architecture
-- Features
-- Requirements
-- Installation
-- Local Execution
-- API Documentation
-- Configuration
-- Deployment
+**Live Deployment:** https://llm-engine.onrender.com
 
-Project Overview
+## Table of Contents
 
-This application automates the verification of judicial processes, determining if they should be approved, rejected, or marked as incomplete for credit purchase. The system uses Claude API (Large Language Model) to provide explainable decisions based on predefined business policies.
+- [Overview](#overview)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Running the Application](#running-the-application)
+- [API Endpoints](#api-endpoints)
+- [Configuration](#configuration)
+- [Docker Deployment](#docker-deployment)
+- [Troubleshooting](#troubleshooting)
 
-The system implements clean architecture principles and structured logging to ensure maintainability, testability, and observability.
+## Overview
 
-Architecture
+This application automates the verification and eligibility assessment of judicial processes against predefined business policies. The system leverages LLM technology through Groq API to provide intelligent analysis and transparent decision-making.
 
-The project follows Clean Architecture with clear separation of concerns:
+### Key Features
+
+- Automated process analysis and verification
+- Structured decision outcomes: approved, rejected, or incomplete
+- Policy-driven verification with clear justifications
+- Batch processing for multiple processes simultaneously
+- Caching mechanism to optimize API usage
+- Comprehensive analytics and monitoring
+- RESTful API with automatic documentation
+- Streamlit web interface for user interaction
+
+### Architecture
 
 ```
-src/
-├── core/                          # Core business logic
-│   ├── domain/                    # Domain models and policies
-│   │   ├── entities.py            # Judicial process entities
-│   │   ├── policy.py              # Business policy rules
-│   │   └── enums/                 # Domain enumerations
-│   ├── application/               # Application services
-│   │   └── services/              # Business logic services
-│   └── infrastructure/            # Technical infrastructure
-│       ├── config.py              # Configuration management
-│       ├── logger_service.py      # Structured logging
-│       └── llm_adapter.py         # Claude API integration
-├── api/                           # API layer
-│   ├── routers/                   # API endpoints
-│   │   ├── health_router.py       # Health check endpoint
-│   │   └── verification_router.py # Verification endpoint
-│   └── schemas.py                 # Pydantic request/response models
-├── entrypoints/                   # Application entry points
-│   ├── main_api.py                # FastAPI application factory
-│   └── main_ui.py                 # Streamlit UI
-└── __init__.py
+app/
+├── api/                    # API routes and middleware
+│   ├── middleware/         # Logging and error handling
+│   └── routes/            # Endpoint definitions
+├── config.py              # Configuration management
+├── domain/                # Business logic and policies
+├── external/              # External service integrations
+├── repositories/          # Data persistence
+├── schemas/               # Request/response models
+├── use_cases/             # Business use case implementations
+└── utils/                 # Utilities (logging, caching)
 ```
 
-Key Design Decisions
+## Quick Start
 
-- Layered Architecture: Separation between domain, application, and infrastructure layers
-- Dependency Injection: Clean dependency management via FastAPI Depends
-- Policy-Driven Verification: Business rules encapsulated in policy service
-- Structured Logging: JSON-formatted logs for better observability
-- Type Safety: Pydantic models for all request/response validation
+### Prerequisites
 
-Features
+- Python 3.11 or higher
+- Groq API key (obtain at https://console.groq.com/)
+- Docker and Docker Compose (optional, for containerized deployment)
 
-Verification Capabilities
-
-- Automated analysis of judicial processes against company policies
-- Multiple decision outcomes: approved, rejected, incomplete
-- Clear justification with policy references for each decision
-- Processing of complex process documents and movements
-
-Business Policies Implemented
-
-- POL-1: Only approved processes in final judgment (transitado em julgado) and execution phase
-- POL-2: Require condemnation value to be informed
-- POL-3: Reject if condemnation value < R$ 1,000
-- POL-4: Reject labor sphere (trabalhista) processes
-- POL-5: Reject if author died without inventory habitation
-- POL-6: Reject delegation without reserve of powers
-- POL-7: Require fees information when applicable
-- POL-8: Mark incomplete if essential documents missing
-
-API Features
-
-- RESTful endpoints with FastAPI
-- Automatic OpenAPI/Swagger documentation
-- Health check endpoint
-- Structured error handling
-- Request/response validation with Pydantic
-
-User Interface
-
-- Streamlit-based web application
-- Intuitive process data input forms
-- Real-time verification results
-- Visual decision indicators (approved/rejected/incomplete)
-- Policy reference details
-
-Observability
-
-- Structured JSON logging with timestamps
-- LangSmith integration ready
-- Request tracking with process numbers
-- Error logging and debugging information
-
-Requirements
-
-- Python 3.11+
-- Docker and Docker Compose (for containerized execution)
-- Anthropic API Key (for Claude LLM)
-- Optional: LangSmith API Key (for enhanced monitoring)
-
-Installation
-
-Local Setup
+### Installation
 
 1. Clone the repository:
-
 ```bash
 git clone <repository-url>
 cd llm-engine
 ```
 
-2. Create a virtual environment:
-
+2. Create and activate virtual environment:
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 3. Install dependencies:
-
 ```bash
 pip install -r requirements.txt
 ```
 
 4. Configure environment variables:
-
 ```bash
-cp env-example .env
-# Edit .env and add your ANTHROPIC_API_KEY
+cp .env.example .env
+# Edit .env and add your GROQ_API_KEY
 ```
 
-Docker Setup
+### Environment Variables
 
-1. Build the Docker image:
+Create a `.env` file in the project root:
 
-```bash
-docker build -t judicial-verification .
+```
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=mixtral-8x7b-32768
+MAX_TOKENS=2048
+TEMPERATURE=0.3
+LOG_LEVEL=INFO
+ENVIRONMENT=development
+DEBUG=False
+HOST=0.0.0.0
+PORT=8000
 ```
 
-2. Run with docker-compose:
+## Running the Application
+
+### API Only
 
 ```bash
-docker-compose up -d
+python app/main.py
 ```
 
-This will start:
-- API on http://localhost:8000
-- UI on http://localhost:8501
+The API will be available at `http://localhost:8000`
 
-Local Execution
+Access API documentation:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
-Running the API Only
-
-```bash
-uvicorn src.entrypoints.main_api:app --host 0.0.0.0 --port 8000 --reload
-```
-
-Access the API documentation at: http://localhost:8000/api/docs
-
-Running the UI Only
-
-```bash
-streamlit run src/entrypoints/main_ui.py
-```
-
-Access the UI at: http://localhost:8501
-
-Running Both Services Locally
+### Using Docker Compose
 
 ```bash
 docker-compose up
 ```
 
-API Documentation
+Services will be available at:
+- API: http://localhost:8000
+- UI (Streamlit): http://localhost:8501
 
-Base URL
+### Stopping the Application
 
-- Local: http://localhost:8000
-- Docker: http://localhost:8000
+```bash
+docker-compose down
+```
 
-Endpoints
+## API Endpoints
 
-Health Check
+### Health & Monitoring
 
-Endpoint: GET /health
-Description: System health verification
-Response: 200 OK
+#### GET `/health`
+Check application health status.
 
+**Response:**
 ```json
 {
-  "status": "operational",
-  "version": "1.0.0",
-  "timestamp": "2024-11-24T10:30:00.000000"
+  "status": "healthy",
+  "timestamp": "2024-11-26T10:30:00.000000",
+  "version": "1.0.0"
 }
 ```
 
-Process Verification
+#### GET `/monitoring/api-status`
+Get API configuration and service status.
 
-Endpoint: POST /v1/verify
-Description: Analyze and verify a judicial process
-Content-Type: application/json
-
-Request Body:
-
+**Response:**
 ```json
 {
-  "process": {
-    "numeroProcesso": "0001234-56.2023.4.05.8100",
-    "classe": "Cumprimento de Sentença contra a Fazenda Pública",
-    "orgaoJulgador": "19ª VARA FEDERAL - SOBRAL/CE",
-    "ultimaDistribuicao": "2024-11-18T23:15:44.130Z",
-    "assunto": "Rural (Art. 48/51)",
-    "segredoJustica": false,
-    "justicaGratuita": true,
-    "siglaTribunal": "TRF5",
-    "esfera": "Federal",
-    "documentos": [
-      {
-        "id": "DOC-1-1",
-        "dataHoraJuntada": "2023-09-10T10:12:05.000",
-        "nome": "Sentença de Mérito",
-        "texto": "PODER JUDICIÁRIO...",
-      }
-    ],
-    "movimentos": [
-      {
-        "dataHora": "2024-01-20T11:22:33.000",
-        "descricao": "Iniciado cumprimento definitivo de sentença."
-      }
-    ],
-    "valorCondenacao": 67592,
-    "honorarios": {
-      "contratuais": 6000,
-      "periciais": 1200,
-      "sucumbenciais": 3000
-    }
+  "status": "operational",
+  "api": {
+    "provider": "Groq",
+    "model": "mixtral-8x7b-32768",
+    "api_key_configured": true,
+    "max_tokens_per_request": 2048
+  },
+  "cache": {
+    "total_entries": 125,
+    "cache_hits": 450,
+    "cache_misses": 50
   }
 }
 ```
 
-Response: 200 OK
+#### GET `/monitoring/cache-stats`
+Get cache performance statistics.
 
+**Response:**
 ```json
 {
+  "status": "success",
+  "cache": {
+    "total_entries": 125,
+    "cache_hits": 450,
+    "cache_misses": 50
+  }
+}
+```
+
+#### POST `/monitoring/cache/clear`
+Clear all cached verification results.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Cache cleared successfully"
+}
+```
+
+### Verification Endpoints
+
+#### POST `/verify/`
+Verify a single judicial process.
+
+**Request Body:**
+```json
+{
+  "numeroProcesso": "0001234-56.2023.4.05.8100",
+  "classe": "Cumprimento de Sentença contra a Fazenda Pública",
+  "orgaoJulgador": "19ª VARA FEDERAL - SOBRAL/CE",
+  "ultimaDistribuicao": "2024-11-18T23:15:44.130Z",
+  "assunto": "Rural (Art. 48/51)",
+  "segredoJustica": false,
+  "justicaGratuita": true,
+  "siglaTribunal": "TRF5",
+  "esfera": "Federal",
+  "valorCondenacao": 67592,
+  "documentos": [
+    {
+      "id": "DOC-1-1",
+      "dataHoraJuntada": "2023-09-10T10:12:05.000",
+      "nome": "Sentença de Mérito",
+      "texto": "PODER JUDICIÁRIO..."
+    }
+  ],
+  "movimentos": [
+    {
+      "dataHora": "2024-01-20T11:22:33.000",
+      "descricao": "Iniciado cumprimento definitivo de sentença."
+    }
+  ],
+  "honorarios": {
+    "contratuais": 6000,
+    "periciais": 1200,
+    "sucumbenciais": 3000
+  }
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "numeroProcesso": "0001234-56.2023.4.05.8100",
   "decision": "approved",
   "rationale": "Process meets all eligibility criteria and is approved for acquisition.",
-  "references": [
+  "citations": [
     {
       "policy_id": "POL-1",
-      "explanation": "Process is in final judgment (transitado em julgado) and execution phase"
+      "explanation": "Process is in final judgment and execution phase"
     },
     {
       "policy_id": "POL-2",
       "explanation": "Condemnation value is informed: R$ 67,592.00"
     }
   ],
-  "process_number": "0001234-56.2023.4.05.8100"
+  "confidence": 0.95,
+  "processingTimeMs": 234,
+  "processedAt": "2024-11-26T10:30:00.000000"
 }
 ```
 
-API Documentation Interface
+#### POST `/verify/batch`
+Verify multiple processes in a single batch request (up to 50 processes).
 
-Access the interactive API documentation:
-
-- Swagger UI: http://localhost:8000/api/docs
-- ReDoc: http://localhost:8000/api/redoc
-- OpenAPI Schema: http://localhost:8000/api/openapi.json
-
-Configuration
-
-Environment Variables
-
-Create a .env file with the following variables:
-
-```
-ANTHROPIC_API_KEY=your_api_key_here
-LLM_MODEL=claude-3-5-sonnet-20241022
-LLM_TEMPERATURE=0.3
-LLM_MAX_TOKENS=2048
-LANGSMITH_API_KEY=optional_langsmith_key
-LANGSMITH_PROJECT=judicial-process-verification
-LANGSMITH_ENABLED=false
-LOG_LEVEL=INFO
-LOG_FORMAT=json
-DEBUG=false
-HOST=0.0.0.0
-PORT=8000
-```
-
-Configuration Management
-
-Configuration is managed through Pydantic Settings (src/core/infrastructure/config.py):
-
-- Loads from environment variables
-- Validates types automatically
-- Provides sensible defaults
-- Can be extended for additional settings
-
-Logging Configuration
-
-The application uses structured JSON logging:
-
-- All logs are formatted as JSON
-- Includes timestamp, level, logger name, and message
-- Extra fields for context information
-- Suitable for log aggregation and monitoring
-
-Log Output Example:
-
+**Request Body:**
 ```json
 {
-  "timestamp": "2024-11-24T10:30:00.000000",
-  "level": "INFO",
-  "logger": "judicial_process_verification",
-  "message": "Process verification completed",
-  "module": "verification_service",
-  "function": "execute",
-  "line": 45,
-  "extra_fields": {
-    "process_number": "0001234-56.2023.4.05.8100",
-    "decision": "approved"
+  "processos": [
+    {
+      "numeroProcesso": "0001234-56.2023.4.05.8100",
+      ...
+    },
+    {
+      "numeroProcesso": "0001235-56.2023.4.05.8100",
+      ...
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "batch_id": "550e8400-e29b-41d4-a716-446655440000",
+  "total": 2,
+  "processados": 2,
+  "erros": 0,
+  "tempo_total_ms": 450,
+  "resultados": [
+    {
+      "numeroProcesso": "0001234-56.2023.4.05.8100",
+      "decision": "approved",
+      "rationale": "...",
+      "citations": [...],
+      "confidence": 0.95
+    },
+    {
+      "numeroProcesso": "0001235-56.2023.4.05.8100",
+      "decision": "rejected",
+      "rationale": "...",
+      "citations": [...]
+    }
+  ]
+}
+```
+
+### Process History
+
+#### GET `/process/{numero_processo}`
+Retrieve verification history for a specific process.
+
+**Response:**
+```json
+{
+  "numeroProcesso": "0001234-56.2023.4.05.8100",
+  "ultimaVerificacao": "2024-11-26T10:30:00.000000",
+  "verificacoes": 1,
+  "ultimaDecisao": "approved",
+  "historico": [
+    {
+      "numeroProcesso": "0001234-56.2023.4.05.8100",
+      "decision": "approved",
+      "rationale": "...",
+      "citations": [...]
+    }
+  ]
+}
+```
+
+#### GET `/process/`
+List all verified processes with optional filtering.
+
+**Query Parameters:**
+- `decision` (optional): Filter by decision type (approved, rejected, incomplete)
+- `limit` (default: 100): Maximum number of results (1-1000)
+- `offset` (default: 0): Number of items to skip for pagination
+
+**Response:**
+```json
+[
+  {
+    "numeroProcesso": "0001234-56.2023.4.05.8100",
+    "decision": "approved",
+    "rationale": "...",
+    "citations": [...],
+    "confidence": 0.95,
+    "processingTimeMs": 234,
+    "processedAt": "2024-11-26T10:30:00.000000"
+  }
+]
+```
+
+### Analytics
+
+#### GET `/analytics/summary`
+Get comprehensive analytics summary of all verifications.
+
+**Response:**
+```json
+{
+  "total_verificacoes": 150,
+  "aprovados": 95,
+  "rejeitados": 40,
+  "incompletos": 15,
+  "taxa_aprovacao_percentual": 63.33,
+  "taxa_rejeicao_percentual": 26.67,
+  "tempo_medio_processamento_ms": 245.50,
+  "politicas_mais_citadas": [
+    {
+      "id": "POL-1",
+      "titulo": "Final Judgment Status",
+      "usos": 148
+    }
+  ],
+  "timestamp": "2024-11-26T10:30:00.000000"
+}
+```
+
+#### GET `/analytics/policies-usage`
+Get usage statistics for each policy.
+
+**Response:**
+```json
+{
+  "POL-1": 148,
+  "POL-2": 145,
+  "POL-3": 89,
+  "POL-4": 78,
+  "POL-5": 23
+}
+```
+
+#### GET `/analytics/decision-distribution`
+Get distribution of decisions across all verifications.
+
+**Response:**
+```json
+{
+  "approved": 95,
+  "rejected": 40,
+  "incomplete": 15,
+  "total": 150
+}
+```
+
+#### GET `/analytics/processing-time`
+Get processing time statistics.
+
+**Response:**
+```json
+{
+  "media_ms": 245.50,
+  "minimo_ms": 120,
+  "maximo_ms": 1200,
+  "total_processamentos": 150
+}
+```
+
+#### GET `/analytics/top-policies`
+Get the most impactful policies.
+
+**Query Parameters:**
+- `limit` (default: 5): Number of policies to return (1-20)
+
+**Response:**
+```json
+[
+  {
+    "id": "POL-1",
+    "titulo": "Final Judgment Status",
+    "categoria": "Process Status",
+    "descricao": "Process must be in final judgment (transitado em julgado) phase",
+    "usos": 148
+  },
+  {
+    "id": "POL-2",
+    "titulo": "Condemnation Value Required",
+    "categoria": "Financial",
+    "descricao": "Condemnation value must be informed",
+    "usos": 145
+  }
+]
+```
+
+#### GET `/analytics/decision-by-sphere`
+Get decision distribution by judicial sphere (Federal, State, Labor).
+
+**Response:**
+```json
+{
+  "Federal": {
+    "approved": 80,
+    "rejected": 30,
+    "incomplete": 10
+  },
+  "Estadual": {
+    "approved": 10,
+    "rejected": 8,
+    "incomplete": 3
+  },
+  "Trabalhista": {
+    "approved": 5,
+    "rejected": 2,
+    "incomplete": 2
   }
 }
 ```
 
-Deployment
+## Configuration
 
-Docker Deployment
+### Groq API Setup
 
-Local Docker Build and Run
+1. Create an account at https://console.groq.com/
+2. Generate an API key
+3. Add to `.env` file as `GROQ_API_KEY`
+4. Monitor usage in the Groq console
+
+### Logging
+
+The application uses structured JSON logging. Logs are output to console and can be configured via the `LOG_LEVEL` environment variable:
+- DEBUG: Verbose information
+- INFO: General informational messages
+- WARNING: Warning messages
+- ERROR: Error messages
+
+## Docker Deployment
+
+### Build Image
 
 ```bash
-# Build image
-docker build -t judicial-verification:latest .
-
-# Run API
-docker run -p 8000:8000 \
-  -e ANTHROPIC_API_KEY=your_key_here \
-  judicial-verification:latest
-
-# Run UI
-docker run -p 8501:8501 \
-  -e ANTHROPIC_API_KEY=your_key_here \
-  judicial-verification:latest \
-  streamlit run src/entrypoints/main_ui.py
+docker build -t llm-engine:latest .
 ```
 
-Docker Compose Full Stack
+### Run with Docker
 
 ```bash
-# Create .env file with your API key
-cp env-example .env
-echo "ANTHROPIC_API_KEY=your_key_here" >> .env
+docker run -p 8000:8000 \
+  -e GROQ_API_KEY=your_key_here \
+  -e ENVIRONMENT=production \
+  llm-engine:latest
+```
 
+### Docker Compose
+
+```bash
 # Start services
 docker-compose up -d
 
 # View logs
-docker-compose logs -f
+docker-compose logs -f api
 
 # Stop services
 docker-compose down
 ```
 
-Cloud Deployment (Railway, Render, Heroku)
+## Cloud Deployment
 
-General Steps
+### Render.com
 
-1. Push code to GitHub
-2. Connect repository to hosting platform
-3. Set environment variables:
-   - ANTHROPIC_API_KEY
-   - LLM_MODEL
-   - LOG_LEVEL
-4. Deploy using Dockerfile
-5. Verify health endpoint
-
-Railway Deployment
-
-1. Create new project on Railway
-2. Connect GitHub repository
-3. Add environment variables in project settings
-4. Railway auto-detects Dockerfile
-5. Deploy and access via provided URL
-
-Render Deployment
-
-1. Create new Web Service on Render
-2. Connect GitHub repository
-3. Specify start command: uvicorn src.entrypoints.main_api:app --host 0.0.0.0 --port 8000
-4. Set environment variables
+1. Push code to GitHub repository
+2. Create new Web Service on Render
+3. Connect your GitHub repository
+4. Set environment variables:
+   - GROQ_API_KEY
+   - ENVIRONMENT=production
+   - LOG_LEVEL=INFO
 5. Deploy
 
-Monitoring and Observability
+The application will be available at your Render service URL.
 
-LangSmith Integration
+### Other Platforms (Railway, Heroku, etc.)
 
-To enable LangSmith monitoring:
+Similar process:
+1. Connect GitHub repository
+2. Set environment variables
+3. Deploy with Dockerfile
+4. Verify health endpoint: `/health`
 
-1. Set LANGSMITH_ENABLED=true in .env
-2. Add LANGSMITH_API_KEY
-3. Set LANGSMITH_PROJECT name
+## Troubleshooting
 
-LangSmith will automatically track:
-- LLM calls
-- Latency
-- Token usage
-- Errors and exceptions
+### API Connection Error
 
-Health Monitoring
-
-The application includes a health check endpoint that can be used with container orchestration:
+**Problem:** Cannot connect to API
+**Solution:** Ensure the application is running and check if port 8000 is available.
 
 ```bash
-curl http://localhost:8000/health
+# Check if port is in use
+netstat -tuln | grep 8000
 ```
 
-Docker Health Check
+### Missing API Key
 
-The Dockerfile includes HEALTHCHECK directive for monitoring container health.
+**Problem:** "GROQ_API_KEY not configured"
+**Solution:** Add your Groq API key to `.env` file and restart the application.
 
-Testing
+### Port Already in Use
 
-Running Tests
+**Problem:** "Port 8000 is already in use"
+**Solution:** Use a different port:
 
 ```bash
-pytest tests/ -v
-pytest tests/ --cov=src
+docker run -p 8001:8000 \
+  -e GROQ_API_KEY=your_key_here \
+  llm-engine:latest
 ```
 
-Testing the API
+### Cache Issues
 
-Using curl:
+**Problem:** Stale results from cache
+**Solution:** Clear cache using the endpoint:
 
 ```bash
-curl -X POST http://localhost:8000/v1/verify \
-  -H "Content-Type: application/json" \
-  -d @test_process.json
+curl -X POST http://localhost:8000/monitoring/cache/clear
 ```
 
-Using the Streamlit UI
+### High API Usage
 
-1. Navigate to http://localhost:8501
-2. Fill in process information
-3. Submit for verification
-4. View results
+**Problem:** Running out of Groq API credits
+**Solution:**
+1. Monitor usage at https://console.groq.com/
+2. Enable caching to reduce API calls
+3. Check cache statistics: `/monitoring/cache-stats`
+4. Consider increasing refresh credits
 
-Development
+## Performance
 
-Project Structure Explanation
+- Average verification processing time: 200-500ms
+- Cache hit rate: 70-90% for repeated processes
+- Batch processing: 50 processes in 5-10 seconds
+- Concurrent requests: Supported with rate limiting
 
-- Domain Layer: Contains business entities, enumerations, and policies
-- Application Layer: Contains business logic services and use cases
-- Infrastructure Layer: Contains technical implementations (logging, LLM adapter, config)
-- API Layer: Contains HTTP endpoints and request/response schemas
-- Entrypoints: Application entry points for API and UI
+## Support and Resources
 
-Key Design Patterns
+- API Documentation: http://localhost:8000/docs
+- Groq Console: https://console.groq.com/
+- Issues: Create an issue in the GitHub repository
 
-- Repository Pattern: Abstracts data access (extensible for databases)
-- Service Pattern: Encapsulates business logic
-- Adapter Pattern: Integrates external services (Claude API)
-- Dependency Injection: Manages dependencies cleanly
-- Policy Pattern: Encapsulates business rules
-
-Adding New Policies
-
-1. Add policy rule to src/core/domain/policy.py
-2. Implement verification logic in PolicyVerificationService
-3. Add corresponding tests
-4. Update documentation
-
-Extending the Application
-
-1. Add new domain entities in src/core/domain/entities.py
-2. Create new services in src/core/application/services/
-3. Add new endpoints in src/api/routers/
-4. Update schemas in src/api/schemas.py
-
-Error Handling
-
-The application implements comprehensive error handling:
-
-- Validation errors return 422 with details
-- Business logic errors return appropriate HTTP status codes
-- Unhandled exceptions return 500 with generic message
-- All errors are logged with full context
-
-LLM Integration Details
-
-Claude API Usage
-
-- Model: claude-3-5-sonnet-20241022 (configurable)
-- Temperature: 0.3 (low temperature for consistent decisions)
-- Max Tokens: 2048 (sufficient for detailed analysis)
-
-The application uses Claude for:
-- Detailed process analysis (optional, currently using deterministic rules)
-- Generating explanations
-- Handling complex edge cases
-
-Error Handling
-
-API errors are handled gracefully:
-
-- Connection errors logged and reported
-- Rate limiting respected with backoff
-- Fallback to policy-based decisions if LLM fails
-
-Troubleshooting
-
-Common Issues
-
-API Connection Error
-
-Problem: "Connection Error: Cannot reach API at http://localhost:8000"
-Solution: Ensure API is running with: uvicorn src.entrypoints.main_api:app --host 0.0.0.0 --port 8000
-
-Missing ANTHROPIC_API_KEY
-
-Problem: "APIError: Invalid API key provided"
-Solution: Set ANTHROPIC_API_KEY in .env file with valid Anthropic API credentials
-
-Docker Port Conflict
-
-Problem: "Port 8000 is already in use"
-Solution: Use different port: docker run -p 8001:8000 ...
-
-Performance Considerations
-
-- Typical verification latency: < 1 second
-- Concurrent requests: Limited by LLM rate limits
-- Memory usage: ~500MB per container
-- Disk space: ~200MB for image and dependencies
-
-Contributing
-
-To contribute:
-
-1. Fork the repository
-2. Create feature branch (git checkout -b feature/improvement)
-3. Make changes following code style
-4. Add tests for new functionality
-5. Commit changes (git commit -am 'Add improvement')
-6. Push to branch (git push origin feature/improvement)
-7. Create Pull Request
-
-License
+## License
 
 This project is licensed under the MIT License. See LICENSE file for details.
-
-Support
-
-For issues or questions:
-
-1. Check the troubleshooting section
-2. Review API documentation at http://localhost:8000/api/docs
-3. Check application logs: docker-compose logs api
-4. Create an issue in the GitHub repository
-
-Changelog
-
-Version 1.0.0 (2024-11-24)
-
-- Initial release
-- Policy-based process verification
-- FastAPI REST endpoints
-- Streamlit UI
-- Structured logging
-- Docker deployment
-- Claude API integration
