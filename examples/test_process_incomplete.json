@@ -1,44 +1,41 @@
 {
-  "process": {
-    "numeroProcesso": "0023456-78.2022.4.05.0000",
-    "classe": "Cumprimento de Sentença contra a Fazenda Pública",
-    "orgaoJulgador": "VARA FEDERAL - RECIFE/PE",
-    "ultimaDistribuicao": "2024-08-12T09:30:00.000Z",
-    "assunto": "Benefício assistencial",
-    "segredoJustica": false,
-    "justicaGratuita": true,
-    "siglaTribunal": "TRF5",
-    "esfera": "Federal",
-    "documentos": [
-      {
-        "id": "DOC-8-1",
-        "dataHoraJuntada": "2022-11-30T10:00:00.000",
-        "nome": "Sentença de Mérito",
-        "texto": "PODER JUDICIÁRIO\nVARA FEDERAL – RECIFE/PE\n\nProcesso sobre benefício assistencial."
-      },
-      {
-        "id": "DOC-8-2",
-        "dataHoraJuntada": "2023-12-20T17:10:00.000",
-        "nome": "Anotação de Secretaria",
-        "texto": "ANOTAÇÃO DE SECRETARIA\n\nÀ Secretaria: registre-se que o processo está pendente de documentos essenciais."
-      },
-      {
-        "id": "DOC-8-3",
-        "dataHoraJuntada": "2024-02-01T15:00:00.000",
-        "nome": "Minuta de Planilha de Cálculos",
-        "texto": "MINUTA DE PLANILHA DE CÁLCULOS\n\nA parte autora juntou apenas minuta, não documento final."
-      }
-    ],
-    "movimentos": [
-      {
-        "dataHora": "2024-03-01T09:00:00.000",
-        "descricao": "Conclusos para conferência de trânsito."
-      },
-      {
-        "dataHora": "2024-05-15T14:30:00.000",
-        "descricao": "Vista à parte autora para juntar certidão de trânsito."
-      }
-    ]
-  }
+  "numeroProcesso": "0023456-78.2022.4.05.0000",
+  "classe": "Cumprimento de Sentença contra a Fazenda Pública",
+  "orgaoJulgador": "VARA FEDERAL - RECIFE/PE",
+  "ultimaDistribuicao": "2024-08-12T09:30:00.000Z",
+  "assunto": "Benefício assistencial",
+  "segredoJustica": false,
+  "justicaGratuita": true,
+  "siglaTribunal": "TRF5",
+  "esfera": "Federal",
+  "documentos": [
+    {
+      "id": "DOC-8-1",
+      "dataHoraJuntada": "2022-11-30T10:00:00.000Z",
+      "nome": "Sentença de Mérito",
+      "texto": "PODER JUDICIÁRIO\nVARA FEDERAL – RECIFE/PE\n\nProcesso sobre benefício assistencial."
+    },
+    {
+      "id": "DOC-8-2",
+      "dataHoraJuntada": "2023-12-20T17:10:00.000Z",
+      "nome": "Anotação de Secretaria",
+      "texto": "ANOTAÇÃO DE SECRETARIA\n\nÀ Secretaria: registre-se que o processo está pendente de documentos essenciais."
+    },
+    {
+      "id": "DOC-8-3",
+      "dataHoraJuntada": "2024-02-01T15:00:00.000Z",
+      "nome": "Minuta de Planilha de Cálculos",
+      "texto": "MINUTA DE PLANILHA DE CÁLCULOS\n\nA parte autora juntou apenas minuta, não documento final."
+    }
+  ],
+  "movimentos": [
+    {
+      "dataHora": "2024-03-01T09:00:00.000Z",
+      "descricao": "Conclusos para conferência de trânsito."
+    },
+    {
+      "dataHora": "2024-05-15T14:30:00.000Z",
+      "descricao": "Vista à parte autora para juntar certidão de trânsito."
+    }
+  ]
 }
-

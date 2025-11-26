@@ -1,0 +1,59 @@
+# Dockerfile for Streamlit interface
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip to latest version
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy code
+COPY ui ./ui
+COPY app/config.py ./app/
+COPY app/utils ./app/utils
+COPY app/__init__.py ./app/
+
+# Configure environment
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    STREAMLIT_SERVER_HEADLESS=true \
+    STREAMLIT_SERVER_PORT=8501 \
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
+    PYTHONPATH=/app
+
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
+# Create .streamlit directory for configuration
+RUN mkdir -p /home/appuser/.streamlit
+
+# Streamlit configuration
+RUN echo "[client]" > /home/appuser/.streamlit/config.toml && \
+    echo "showErrorDetails = false" >> /home/appuser/.streamlit/config.toml && \
+    echo "[logger]" >> /home/appuser/.streamlit/config.toml && \
+    echo "level = \"info\"" >> /home/appuser/.streamlit/config.toml && \
+    echo "[server]" >> /home/appuser/.streamlit/config.toml && \
+    echo "headless = true" >> /home/appuser/.streamlit/config.toml
+
+# Health check command
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=15s \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+# Expose port
+EXPOSE 8501
+
+# Comando default
+CMD ["streamlit", "run", "ui/app.py", "--logger.level=info"]

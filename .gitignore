@@ -1,6 +1,18 @@
-.env
-.env.local
-.env*.local
+# Ambiente
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -21,18 +33,38 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Testes
 .pytest_cache/
 .coverage
 htmlcov/
-.venv
-venv/
-env/
-ENV/
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-.DS_Store
-node_modules/
-.env.example
+.tox/
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Banco de dados
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+.cache/
+*.cache
+
+# Temporários
+tmp/
+temp/
+*.tmp
+
+# Docker
+docker-compose.override.yml
+
+# LangSmith
+.langsmith/
