@@ -206,8 +206,9 @@ if page == "Verificador":
                         st.subheader("Políticas Citadas")
                         citations = resultado.get("citations", [])
                         if citations:
-                            for citation in citations:
-                                st.tag(citation)
+                            # Display citations as badges using markdown
+                            badges = " ".join([f"`{str(c)}`" for c in citations])
+                            st.markdown(badges)
                         else:
                             st.info("Nenhuma política específica citada")
                         
@@ -254,7 +255,12 @@ elif page == "Histórico":
                 st.write(proc.get("rationale"))
                 
                 st.write("**Políticas:**")
-                st.tags(proc.get("citations", []))
+                citations = proc.get("citations", [])
+                if citations:
+                    badges = " ".join([f"`{str(c)}`" for c in citations])
+                    st.markdown(badges)
+                else:
+                    st.info("Nenhuma política citada")
 
 
 elif page == "Analytics":
@@ -338,7 +344,3 @@ elif page == "Documentação":
     st.subheader("Documentação Interativa")
     st.write("Acesse a documentação Swagger em: http://localhost:8000/docs")
     st.write("Ou ReDoc em: http://localhost:8000/redoc")
-
-
-st.markdown("---")
-st.markdown("Process Verifier")
