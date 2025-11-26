@@ -10,6 +10,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.exceptions import OutputParserException
+from openai import RateLimitError, AuthenticationError
 
 from app.config import settings
 from app.utils.logger import get_logger
@@ -17,6 +18,16 @@ from app.domain.policies import POLICIES
 
 
 logger = get_logger("llm_service")
+
+
+class APICreditsExhaustedError(Exception):
+    """Raised when API has exhausted credits/rate limit."""
+    pass
+
+
+class APIAuthenticationError(Exception):
+    """Raised when API key is invalid or expired."""
+    pass
 
 
 class LLMService:
@@ -40,37 +51,35 @@ class LLMService:
     def _setup_chain(self):
         """Setup the LangChain prompt and parser"""
         
-        prompt_template = """Você é um especialista em análise de crédito judicial. 
-Sua tarefa é avaliar se um processo deve ser adquirido de acordo com as políticas da empresa.
+        # Otimizado: Prompt mais conciso para economizar tokens
+        prompt_template = """Você é especialista em análise de crédito judicial.
+Avalie se o processo deve ser adquirido conforme políticas.
 
-# Políticas de Verificação de Crédito Judicial
-
+# Políticas
 {policies_context}
 
-## Dados do Processo
+## Processo
 ```json
 {processo_json}
 ```
 
-## Instruções
+## Análise Rápida
+- Verifique elegibilidade, exclusões, documentação
+- Decida: approved|rejected|incomplete
+- Justifique brevemente (máx 2-3 frases)
+- Cite políticas relevantes (POL-1, etc)
+- Confiança de 0 a 1
 
-1. Analise o processo contra TODAS as políticas acima
-2. Determine uma das três decisões: "approved", "rejected" ou "incomplete"
-3. Justifique sua decisão de forma clara e concisa
-4. Cite as políticas relevantes (IDs: POL-1, POL-2, etc)
-5. Estimar confiança de 0 a 1
-
-## Responda APENAS em JSON válido:
-
+## Responda em JSON:
 {{
-  "decision": "approved|rejected|incomplete",
-  "rationale": "Justificativa clara da decisão",
-  "citations": ["POL-X", "POL-Y"],
-  "confidence": 0.95,
+  "decision": "approved",
+  "rationale": "Justificativa concisa",
+  "citations": ["POL-1"],
+  "confidence": 0.9,
   "policy_analysis": {{
-    "elegibilidade": {{"cumpre": true, "motivo": "..."}},
-    "exclusoes": {{"cumpre": true, "motivo": "..."}},
-    "documentacao": {{"cumpre": true, "motivo": "..."}}
+    "elegibilidade": {{"cumpre": true, "motivo": "Atende critério"}},
+    "exclusoes": {{"cumpre": true, "motivo": "Sem exclusões"}},
+    "documentacao": {{"cumpre": true, "motivo": "Completa"}}
   }}
 }}
 """
@@ -172,8 +181,64 @@ Sua tarefa é avaliar se um processo deve ser adquirido de acordo com as políti
             )
             raise ValueError(f"Invalid JSON response from LLM: {e}")
         
+        except RateLimitError as e:
+            # OpenAI rate limit or quota exceeded
+            processing_time = int((time.time() - start_time) * 1000)
+            error_msg = str(e).lower()
+            
+            logger.error(
+                "OpenAI Rate Limit/Credits Exceeded",
+                extra={"extra_data": {
+                    "request_id": request_id,
+                    "error": str(e),
+                    "processing_time_ms": processing_time,
+                    "error_type": "rate_limit"
+                }}
+            )
+            
+            raise APICreditsExhaustedError(
+                f"API de crédito esgotado. Motivo: {str(e)}. "
+                f"Por favor, adicione créditos à sua conta OpenAI ou aguarde o reset do rate limit."
+            )
+        
+        except AuthenticationError as e:
+            # Invalid API key or expired
+            processing_time = int((time.time() - start_time) * 1000)
+            logger.error(
+                "OpenAI Authentication Failed",
+                extra={"extra_data": {
+                    "request_id": request_id,
+                    "error": "Invalid API key or authentication failed",
+                    "processing_time_ms": processing_time,
+                    "error_type": "auth_error"
+                }}
+            )
+            
+            raise APIAuthenticationError(
+                "Falha na autenticação com a API. "
+                "Verifique se a chave de API é válida e tem permissões ativas."
+            )
+        
         except Exception as e:
             processing_time = int((time.time() - start_time) * 1000)
+            error_str = str(e).lower()
+            
+            # Check for common API error patterns
+            if "quota" in error_str or "insufficient_quota" in error_str:
+                logger.error(
+                    "OpenAI Quota Exceeded",
+                    extra={"extra_data": {
+                        "request_id": request_id,
+                        "error": str(e),
+                        "processing_time_ms": processing_time,
+                        "error_type": "quota_error"
+                    }}
+                )
+                raise APICreditsExhaustedError(
+                    "Sua cota de crédito na API foi excedida. "
+                    "Adicione mais créditos ou aguarde a renovação mensal."
+                )
+            
             logger.error(
                 "Unexpected error during LLM verification",
                 extra={"extra_data": {

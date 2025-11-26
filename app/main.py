@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from app.config import settings
 from app.utils.logger import get_logger, setup_logging
-from app.api.routes import health, verify, process, analytics
+from app.api.routes import health, verify, process, analytics, monitoring
 from app.api.middleware.logging import LoggingMiddleware, ErrorHandlingMiddleware
 
 
@@ -35,6 +35,7 @@ app.include_router(health.router)
 app.include_router(verify.router)
 app.include_router(process.router)
 app.include_router(analytics.router)
+app.include_router(monitoring.router)
 
 
 @app.on_event("startup")

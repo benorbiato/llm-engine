@@ -8,10 +8,11 @@ from app.schemas.responses import (
     BatchVerificacaoResponseSchema
 )
 from app.use_cases.verify_process import VerifyProcessUseCase
-from app.external.llm_service import LLMService
+from app.external.llm_service import LLMService, APICreditsExhaustedError, APIAuthenticationError
 from app.repositories.process_repository import get_repository
 from app.external.langsmith_client import langsmith_client
 from app.utils.logger import get_logger
+from app.utils.cache import verification_cache
 import time
 
 
@@ -55,13 +56,63 @@ async def verify_process(
         # Convert schema to dict to pass to use case
         processo_dict = processo.model_dump()
         
+        # 🚀 Check cache first to avoid unnecessary API calls
+        cached_result = verification_cache.get(processo_dict)
+        if cached_result:
+            logger.info(
+                "Returning cached verification result",
+                extra={"extra_data": {
+                    "request_id": request_id,
+                    "numero_processo": processo.numeroProcesso,
+                    "from_cache": True
+                }}
+            )
+            return cached_result
+        
         # Execute use case
         resultado = await verify_use_case.execute(
             processo_dict,
             request_id=request_id
         )
         
+        # Cache the result for future requests
+        verification_cache.set(processo_dict, resultado)
+        
         return resultado
+    
+    except APICreditsExhaustedError as e:
+        logger.error(
+            "API Credits Exhausted",
+            extra={"extra_data": {
+                "request_id": request_id,
+                "error": str(e)
+            }}
+        )
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail={
+                "error": "api_credits_exhausted",
+                "message": str(e),
+                "help": "Adicione créditos à sua conta OpenAI em https://platform.openai.com/account/billing/overview"
+            }
+        )
+    
+    except APIAuthenticationError as e:
+        logger.error(
+            "API Authentication Failed",
+            extra={"extra_data": {
+                "request_id": request_id,
+                "error": str(e)
+            }}
+        )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "error": "api_authentication_failed",
+                "message": str(e),
+                "help": "Verifique sua chave de API OpenAI nas variáveis de ambiente"
+            }
+        )
     
     except ValueError as e:
         logger.warning(
@@ -114,17 +165,56 @@ async def verify_batch(
     start_time = time.time()
     resultados = []
     erros = 0
+    cached_count = 0
+    api_calls = 0
+    api_error: Optional[str] = None
     
     for processo in batch_request.processos:
         try:
             request_id = f"{batch_id}-{len(resultados)}"
             processo_dict = processo.model_dump()
             
+            # 🚀 Check cache first
+            cached_result = verification_cache.get(processo_dict)
+            if cached_result:
+                resultados.append(cached_result)
+                cached_count += 1
+                continue
+            
+            # Make API call only if not cached
+            api_calls += 1
             resultado = await verify_use_case.execute(
                 processo_dict,
                 request_id=request_id
             )
             resultados.append(resultado)
+            
+            # Cache for future use
+            verification_cache.set(processo_dict, resultado)
+        
+        except APICreditsExhaustedError as e:
+            logger.error(
+                "API Credits Exhausted in batch",
+                extra={"extra_data": {
+                    "batch_id": batch_id,
+                    "erro_indice": len(resultados)
+                }}
+            )
+            api_error = str(e)
+            erros += 1
+            break  # Stop processing batch when credits are exhausted
+        
+        except APIAuthenticationError as e:
+            logger.error(
+                "API Authentication Failed in batch",
+                extra={"extra_data": {
+                    "batch_id": batch_id,
+                    "erro_indice": len(resultados)
+                }}
+            )
+            api_error = str(e)
+            erros += 1
+            break  # Stop processing batch
         
         except Exception as e:
             logger.error(
@@ -155,11 +245,13 @@ async def verify_batch(
             "total": len(batch_request.processos),
             "processados": len(resultados),
             "erros": erros,
+            "cached": cached_count,
+            "api_calls": api_calls,
             "tempo_total_ms": tempo_total_ms
         }}
     )
     
-    return BatchVerificacaoResponseSchema(
+    response = BatchVerificacaoResponseSchema(
         batch_id=batch_id,
         total=len(batch_request.processos),
         processados=len(resultados),
@@ -167,3 +259,9 @@ async def verify_batch(
         resultados=resultados,
         tempo_total_ms=tempo_total_ms
     )
+    
+    # Add error info if API failed
+    if api_error:
+        response.api_error = api_error
+    
+    return response
